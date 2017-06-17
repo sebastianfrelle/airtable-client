@@ -1,6 +1,6 @@
 """Unit testing
 
-** You need ./constants.py with base_url, table_name and api_key 
+** You need ./constants.py with base_url, table_name and api_key
 pointing to the Airtable table you want to test against.**
 """
 import unittest
@@ -13,3 +13,6 @@ from .constants import BASE_URL, TABLE_NAME, API_KEY
 class TestAirtableClient(unittest.TestCase):
     """Test the Airtable client
     """
+
+    def test_add(self):
+        self.assertTrue(True)
