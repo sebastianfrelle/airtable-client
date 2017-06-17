@@ -32,11 +32,12 @@ class Airtable:
         self.auth_header = {'Authorization': f'Bearer {api_key}'}
 
     def _request(self, method, params=None, data=None):
-        url = self.url 
+        url = self.url
         if params:
             url += self._format_param_str(params)
-        
-        res = requests.request(method, url, headers=self.auth_header, data=data)
+
+        res = requests.request(
+            method, url, headers=self.auth_header, data=data)
         parsed_res = json.loads(res.text)
 
         if res.status_code not in range(200, 300):
