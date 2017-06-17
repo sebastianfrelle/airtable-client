@@ -8,11 +8,15 @@ a common, open Airtable instance-- obviously, I can't provide my
 personal Airtable API key. For better coverage, I suggest writing
 supplementary testing (sorry).
 """
-import unittest
-from .context import airtable_client as client
 
-# Needs constants to run
+import logging
+import unittest
+
+from .context import airtable_client as client
 from .constants import BASE_URL, TABLE_NAME, API_KEY
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class TestAirtableClient(unittest.TestCase):
@@ -22,9 +26,11 @@ class TestAirtableClient(unittest.TestCase):
     def setUp(self):
         self.table = client.Airtable(BASE_URL, TABLE_NAME, API_KEY)
 
+    # Tests
     def test_init_table(self):
         """Test initializing the client
         """
+
         self.assertIsNotNone(self.table)
         self.assertEqual(BASE_URL + TABLE_NAME, self.table.url)
 
@@ -33,15 +39,29 @@ class TestAirtableClient(unittest.TestCase):
 
         Serves to verify connection
         """
-        recs = self.table.get(max_records=1)
+
+        recs = self.table.get(maxRecords=1)
 
         self.assertIsNotNone(recs)
         self.assertTrue(isinstance(recs, list))
         self.assertFalse(len(recs) > 1)  # Could be of length 0 or 1
 
-    def test_read_records(self):
+    def test_format_params(self):
+        """Format string of parameters
+        """
+
+        params = {
+            'maxRecords': 1,
+            'pageSize': 'large',
+        }
+        formatted = self.table._format_param_str(params)
+
+        self.assertEqual('?maxRecords=1&pageSize=large', formatted)
+
+    def test_read_all_records(self):
         """Read all records in the table
         """
+
         recs = self.table.get()
 
         self.assertIsNotNone(recs)
