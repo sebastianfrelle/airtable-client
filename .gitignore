@@ -3,3 +3,4 @@ __pycache__/
 tests/constants.py
 *.egg-info/
 .eggs/
+.vscode/
