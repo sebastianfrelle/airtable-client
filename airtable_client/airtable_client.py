@@ -12,6 +12,7 @@ def format_url_param_str(params):
 class UnknownParamException(Exception):
     """An unknown param was passed to a request.
     """
+
     pass
 
 
@@ -41,18 +42,21 @@ class Airtable:
         if params:
             url += format_url_param_str(params)
 
-        res = requests.request(
-            method, url, headers=self.auth_header, data=data)
-        parsed_res = json.loads(res.text)
+        headers = self.auth_header
+        if method in ['POST', 'PUT', 'UPDATE']:
+            headers['Content-type'] = 'application/json'
+
+        res = requests.request(method, url, headers=headers, data=data)
+
+        parsed_res = res.json()
 
         if res.status_code not in range(200, 300):
-            msg = parsed_res.get('error', None)
+            msg = parsed_res.get('error')
             raise AirtableException(msg)
 
         return parsed_res
 
     # CRUD operations
-
     def get(self, **params):
         """Issue a GET request
 
@@ -63,3 +67,20 @@ class Airtable:
         records = res['records']
 
         return records
+
+    def post(self, data):
+        """Issue a POST request
+        """
+        pass
+
+    def create(self):
+        pass
+
+    def read(self, id=None):
+        pass
+
+    def update(self):
+        pass
+
+    def delete(self):
+        pass

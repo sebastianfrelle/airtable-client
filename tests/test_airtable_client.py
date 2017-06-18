@@ -34,6 +34,20 @@ class TestAirtableClient(unittest.TestCase):
         self.assertIsNotNone(self.table)
         self.assertEqual(BASE_URL + TABLE_NAME, self.table.url)
 
+    def test_format_params(self):
+        """Format string of parameters
+        """
+
+        params = {
+            'maxRecords': 1,
+            'pageSize': 'large',
+            'hamspam': 2.897,
+        }
+        formatted = client.format_url_param_str(params)
+
+        self.assertEqual(
+            '?maxRecords=1&pageSize=large&hamspam=2.897', formatted)
+
     def test_read_one_record(self):
         """Read first record in table
 
@@ -46,19 +60,6 @@ class TestAirtableClient(unittest.TestCase):
         self.assertTrue(isinstance(recs, list))
         self.assertTrue(len(recs) in [0, 1])
 
-    def test_format_params(self):
-        """Format string of parameters
-        """
-
-        params = {
-            'maxRecords': 1,
-            'pageSize': 'large',
-            'hamspam': 2.897,
-        }
-        formatted = client.format_url_param_str(params)
-
-        self.assertEqual('?maxRecords=1&pageSize=large&hamspam=2.897', formatted)
-
     def test_read_all_records(self):
         """Read all records in the table
         """
@@ -67,3 +68,6 @@ class TestAirtableClient(unittest.TestCase):
 
         self.assertIsNotNone(recs)
         self.assertTrue(isinstance(recs, list))
+
+    def test_create_a_record(self):
+        pass
