@@ -13,7 +13,7 @@ import logging
 import unittest
 
 from .context import airtable_client as client
-from .constants import BASE_URL, TABLE_NAME, API_KEY
+from .constants import BASE_ID, TABLE_NAME, API_KEY
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,15 +24,14 @@ class TestAirtableClient(unittest.TestCase):
     """
 
     def setUp(self):
-        self.table = client.Airtable(BASE_URL, TABLE_NAME, API_KEY)
+        self.test_base = client.AirtableBase(BASE_ID, API_KEY)
 
     # Tests
     def test_init_table(self):
         """Test initializing the client
         """
 
-        self.assertIsNotNone(self.table)
-        self.assertEqual(BASE_URL + TABLE_NAME, self.table.url)
+        self.assertIsNotNone(self.test_base)
 
     def test_format_params(self):
         """Format string of parameters
@@ -51,23 +50,31 @@ class TestAirtableClient(unittest.TestCase):
     def test_read_one_record(self):
         """Read first record in table
 
-        Serves to verify connection
+        Also serves to verify connection.
         """
 
-        recs = self.table.get(maxRecords=1)
+        res = self.test_base.retrieve(table_name=TABLE_NAME, limit=1)
 
-        self.assertIsNotNone(recs)
-        self.assertTrue(isinstance(recs, list))
-        self.assertTrue(len(recs) in [0, 1])
+        self.assertIsNotNone(res)
+        self.assertIsInstance(res, dict)
+        self.assertIn('records', res.keys())
+
+        records = res['records']
+        self.assertIsInstance(records, list)
+        self.assertTrue(len(records) in (0, 1))
 
     def test_read_all_records(self):
         """Read all records in the table
         """
 
-        recs = self.table.get()
+        res = self.test_base.retrieve(table_name=TABLE_NAME)
 
-        self.assertIsNotNone(recs)
-        self.assertTrue(isinstance(recs, list))
+        self.assertIsNotNone(res)
+        self.assertIsInstance(res, dict)
+        self.assertIn('records', res.keys())
+
+        records = res['records']
+        self.assertIsInstance(records, list)
 
     def test_create_a_record(self):
         pass
