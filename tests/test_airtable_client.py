@@ -44,7 +44,7 @@ class TestAirtableClient(unittest.TestCase):
 
         self.assertIsNotNone(recs)
         self.assertTrue(isinstance(recs, list))
-        self.assertFalse(len(recs) > 1)  # Could be of length 0 or 1
+        self.assertTrue(len(recs) in [0, 1])
 
     def test_format_params(self):
         """Format string of parameters
@@ -53,10 +53,11 @@ class TestAirtableClient(unittest.TestCase):
         params = {
             'maxRecords': 1,
             'pageSize': 'large',
+            'hamspam': 2.897,
         }
-        formatted = self.table._format_param_str(params)
+        formatted = client.format_url_param_str(params)
 
-        self.assertEqual('?maxRecords=1&pageSize=large', formatted)
+        self.assertEqual('?maxRecords=1&pageSize=large&hamspam=2.897', formatted)
 
     def test_read_all_records(self):
         """Read all records in the table

@@ -4,6 +4,11 @@ import requests
 import json
 
 
+def format_url_param_str(params):
+    url_params = [f"{k}={v}" for k, v in params.items()]
+    return '?' + '&'.join(url_params)
+
+
 class UnknownParamException(Exception):
     """An unknown param was passed to a request.
     """
@@ -34,7 +39,7 @@ class Airtable:
     def _request(self, method, params=None, data=None):
         url = self.url
         if params:
-            url += self._format_param_str(params)
+            url += format_url_param_str(params)
 
         res = requests.request(
             method, url, headers=self.auth_header, data=data)
@@ -45,10 +50,6 @@ class Airtable:
             raise AirtableException(msg)
 
         return parsed_res
-
-    def _format_param_str(self, params):
-        url_params = [f"{k}={v}" for k, v in params.items()]
-        return '?' + '&'.join(url_params)
 
     # CRUD operations
 

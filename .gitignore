@@ -4,3 +4,4 @@ tests/constants.py
 *.egg-info/
 .eggs/
 .vscode/
+/notes/
