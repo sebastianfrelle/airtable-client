@@ -2,20 +2,14 @@
 """
 import requests
 import json
+import re
 
 API_URL = 'https://api.airtable.com/v0/'
 
 
-def format_url_param_str(params):
-    url_params = [f"{k}={v}" for k, v in params.items()]
-    return '?' + '&'.join(url_params)
-
-
-class UnknownParamException(Exception):
-    """An unknown param was passed to a request.
-    """
-
-    pass
+def format_url_params(params):
+    url_params = ["{}={}".format(k, v) for k, v in params.items()]
+    return '&'.join(url_params)
 
 
 class AirtableException(Exception):
@@ -24,6 +18,12 @@ class AirtableException(Exception):
 
     def __init__(self, err=None):
         super().__init__(err)
+
+
+class InvalidTableNameException(Exception):
+    """An invalid table name was provided.
+    """
+    pass
 
 
 class AirtableBase:
@@ -36,38 +36,34 @@ class AirtableBase:
         self.base_id = base_id
         self.api_key = api_key
 
-        self.url = API_URL + base_id
+        self.url = f"{API_URL}{base_id}"
         self.headers = {
             'Authorization': f'Bearer {api_key}',
             'Content-type': 'application/json',
         }
 
-    def _request(self, method, url, data=None):
-        return requests.request(method, url, headers=self.headers, data=data)
+    def _format_url(self, base_id, table_name,
+                    identifiers=None, **params):
+        if identifiers is None:
+            identifiers = []
+
+        # Sanitize and validate table name
+        hit = re.search(r'[^/]+', table_name)
+        if not hit:
+            raise InvalidTableNameException()
+
+        table_name = hit.group(0)
+
+        components = (API_URL, base_id, table_name, *identifiers)
+        return '/'.join(components)
 
     def retrieve(self, table_name, record_id=None, **params):
         """Retrieve records from the Airtable base.
         """
 
-        url = self.url + '/' + table_name
-        if record_id:
-            url += '/' + record_id
-        if params:
-            url += format_url_param_str(params)
+        res = requests.request('GET', url, headers=self.headers)
 
-        res = self._request(method='GET', url=url)
-
-        # Error checking here
-        if res.status_code not in range(200, 300):
-            err = {
-                'msg': res.json().get('error'),
-                'status_code': res.status_code,
-            }
-            raise AirtableException(err)
-
-        res_data = res.json()
-
-        return res_data
+        return records
 
     def create(self):
         pass

@@ -42,10 +42,10 @@ class TestAirtableClient(unittest.TestCase):
             'pageSize': 'large',
             'hamspam': 2.897,
         }
-        formatted = client.format_url_param_str(params)
+        formatted = client.format_url_params(params)
 
         self.assertEqual(
-            '?maxRecords=1&pageSize=large&hamspam=2.897', formatted)
+            'maxRecords=1&pageSize=large&hamspam=2.897', formatted)
 
     def test_read_one_record(self):
         """Read first record in table
