@@ -76,5 +76,5 @@ class TestAirtableClient(unittest.TestCase):
         records = res['records']
         self.assertIsInstance(records, list)
 
-    def test_create_a_record(self):
-        pass
+    # def test_create_a_record(self):
+    #     pass

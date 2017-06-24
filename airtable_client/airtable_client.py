@@ -7,9 +7,8 @@ import re
 API_URL = 'https://api.airtable.com/v0/'
 
 
-def format_url_params(params):
-    url_params = ["{}={}".format(k, v) for k, v in params.items()]
-    return '&'.join(url_params)
+def format_url(base_url, *resources):
+    return '/'.join([str(r) for r in resources if r])
 
 
 class AirtableException(Exception):
@@ -18,10 +17,11 @@ class AirtableException(Exception):
 
     def __init__(self, err=None):
         super().__init__(err)
+        self.err = err
 
 
-class InvalidTableNameException(Exception):
-    """An invalid table name was provided.
+class ConversionException(Exception):
+    """Could not parse JSON response data to dict
     """
     pass
 
@@ -42,28 +42,19 @@ class AirtableBase:
             'Content-type': 'application/json',
         }
 
-    def _format_url(self, base_id, table_name,
-                    identifiers=None, **params):
-        if identifiers is None:
-            identifiers = []
-
-        # Sanitize and validate table name
-        hit = re.search(r'[^/]+', table_name)
-        if not hit:
-            raise InvalidTableNameException()
-
-        table_name = hit.group(0)
-
-        components = (API_URL, base_id, table_name, *identifiers)
-        return '/'.join(components)
-
     def retrieve(self, table_name, record_id=None, **params):
         """Retrieve records from the Airtable base.
         """
+        url = format_url(self.url, table_name, record_id)
 
-        res = requests.request('GET', url, headers=self.headers)
+        res = requests.get(url, params)
+        if res.status_code not in range(200, 300):
+            pass
 
-        return records
+        try:
+            return res.json()
+        except ValueError as ve:
+            raise ConversionError()
 
     def create(self):
         pass
