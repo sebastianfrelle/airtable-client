@@ -7,7 +7,7 @@ import re
 API_URL = 'https://api.airtable.com/v0/'
 
 
-def format_url(base_url, *resources):
+def format_url(*resources):
     return '/'.join([str(r) for r in resources if r])
 
 
@@ -36,28 +36,31 @@ class AirtableBase:
         self.base_id = base_id
         self.api_key = api_key
 
-        self.url = f"{API_URL}{base_id}"
+        self.url = API_URL + base_id
         self.headers = {
             'Authorization': f'Bearer {api_key}',
             'Content-type': 'application/json',
         }
 
     def retrieve(self, table_name, record_id=None, **params):
-        """Retrieve records from the Airtable base.
+        """Retrieve records from the Airtable base
         """
         url = format_url(self.url, table_name, record_id)
 
-        res = requests.get(url, params)
+        res = requests.get(url, params, headers=self.headers)
         if res.status_code not in range(200, 300):
-            pass
+            raise AirtableException({'status_code': res.status_code})
 
         try:
             return res.json()
         except ValueError as ve:
             raise ConversionError()
 
-    def create(self):
-        pass
+    def create(self, table_name, data):
+        """Create a new record in the Airtable table with name table_name
+        """
+
+        
 
     def read(self, id=None):
         pass

@@ -13,7 +13,7 @@ import logging
 import unittest
 
 from .context import airtable_client as client
-from .constants import BASE_ID, TABLE_NAME, API_KEY
+from .constants import BASE_ID, TABLE_NAME, API_KEY, TEST_RECORD
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -33,19 +33,14 @@ class TestAirtableClient(unittest.TestCase):
 
         self.assertIsNotNone(self.test_base)
 
-    def test_format_params(self):
-        """Format string of parameters
+    def test_format_url(self):
+        """Test URL formatter
         """
 
-        params = {
-            'maxRecords': 1,
-            'pageSize': 'large',
-            'hamspam': 2.897,
-        }
-        formatted = client.format_url_params(params)
+        base_url = 'http://www.foo.com'
+        url = client.format_url(base_url, 'foo', None, 'bar')
 
-        self.assertEqual(
-            'maxRecords=1&pageSize=large&hamspam=2.897', formatted)
+        self.assertEqual(f"{base_url}/foo/bar", url)
 
     def test_read_one_record(self):
         """Read first record in table
@@ -76,5 +71,17 @@ class TestAirtableClient(unittest.TestCase):
         records = res['records']
         self.assertIsInstance(records, list)
 
-    # def test_create_a_record(self):
-    #     pass
+    def test_create_a_record(self):
+        """Create a new record in a table
+        """
+
+        res = self.test_base.create(table_name=TABLE_NAME, data=TEST_RECORD)
+
+        self.assertIsNotNone(res)
+        self.assertIsInstance(res, dict)
+        self.assertIsNotNone(res.get('id'))
+
+        # Assert identical values for similar objects in persisted object and
+        # response
+        for k in TEST_RECORD.keys():
+            self.assertEqual(TEST_RECORD[k], res[k])
