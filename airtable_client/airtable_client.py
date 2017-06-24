@@ -60,13 +60,47 @@ class AirtableBase:
         """Create a new record in the Airtable table with name table_name
         """
 
-        
+        url = format_url(self.url, table_name)
 
-    def read(self, id=None):
-        pass
+        res = requests.post(url, json=data, headers=self.headers)
+        if res.status_code not in range(200, 300):
+            raise AirtableException({'status_code': res.status_code})
 
-    def update(self):
-        pass
+        try:
+            return res.json()
+        except ValueError as ve:
+            raise ConversionException()
 
-    def delete(self):
-        pass
+    def partial_update(self, table_name, data):
+        """Update a record in the Airtable table with name table_name
+        """
+
+        url = format_url(self.url, table_name, record_id)
+
+        res = requests.patch(url, headers=self.headers)
+        if res.status_code not in range(200, 300):
+            raise AirtableException({'status_code': res.status_code})
+
+        try:
+            return res.json()
+        except ValueError as ve:
+            raise ConversionException()
+
+    def delete(self, table_name, record_id):
+        """Delete a record in the Airtable table with name table_name
+        """
+
+        url = format_url(self.url, table_name, record_id)
+
+        res = requests.delete(url, headers=self.headers)
+        if res.status_code not in range(200, 300):
+            raise AirtableException({'status_code': res.status_code})
+
+        data = res.json()
+        if not data['deleted']:
+            raise AirtableException(data)
+
+        try:
+            return data
+        except ValueError as ve:
+            raise ConversionException()

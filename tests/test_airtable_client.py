@@ -81,7 +81,13 @@ class TestAirtableClient(unittest.TestCase):
         self.assertIsInstance(res, dict)
         self.assertIsNotNone(res.get('id'))
 
-        # Assert identical values for similar objects in persisted object and
-        # response
-        for k in TEST_RECORD.keys():
-            self.assertEqual(TEST_RECORD[k], res[k])
+        # Assert equal values for keys that exist in both test data and created
+        # input
+        for k in TEST_RECORD['fields'].keys():
+            self.assertEqual(TEST_RECORD['fields'][k], res['fields'][k])
+
+    def test_partially_update_a_record(self):
+        """Test partially update a record
+        """
+
+        pass
