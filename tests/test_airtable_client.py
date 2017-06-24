@@ -11,6 +11,9 @@ supplementary testing (sorry).
 
 import logging
 import unittest
+import random
+
+random.randint()
 
 from .context import airtable_client as client
 from .constants import BASE_ID, TABLE_NAME, API_KEY, TEST_RECORD
@@ -89,5 +92,16 @@ class TestAirtableClient(unittest.TestCase):
     def test_partially_update_a_record(self):
         """Test partially update a record
         """
+
+        res = self.test_base.retrieve(table_name=TABLE_NAME)
+        records = res['records']
+
+        # Get a random record to test with
+        test_record = records[random.randrange(len(records))]
+
+        
+        for k, v in test_record.items():
+            if isinstance(v, str):
+
 
         pass
