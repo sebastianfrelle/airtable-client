@@ -27,8 +27,17 @@ class TestAirtableClient(unittest.TestCase):
     """Test the Airtable client
     """
 
-    def setUp(self):
-        self.test_base = client.AirtableBase(BASE_ID, API_KEY)
+    @classmethod
+    def setUpClass(cls):
+        cls.test_base = client.AirtableBase(BASE_ID, API_KEY)
+        cls.created_test_records = []
+
+    @classmethod
+    def tearDownClass(cls):
+        # Delete any records created by running this test case
+        for record_id in cls.created_test_records:
+            res = cls.test_base.delete(TABLE_NAME, record_id)
+            assert record_id == res['id']
 
     # Tests
     def test_init_table(self):
@@ -83,7 +92,12 @@ class TestAirtableClient(unittest.TestCase):
 
         self.assertIsNotNone(res)
         self.assertIsInstance(res, dict)
-        self.assertIsNotNone(res.get('id'))
+
+        created_id = res.get('id')
+        self.assertIsNotNone(created_id)
+
+        # For cleaning up created tests in tearDown
+        self.created_test_records.append(created_id)
 
         # Assert equal values for keys that exist in both test data and created
         # input
