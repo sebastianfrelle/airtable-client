@@ -79,7 +79,6 @@ class AirtableBase:
 
         res = requests.patch(url, json=data, headers=self.headers)
         if res.status_code not in range(200, 300):
-            print(res.text)
             raise AirtableException({'status_code': res.status_code})
 
         try:

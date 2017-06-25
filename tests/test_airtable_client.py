@@ -107,8 +107,6 @@ class TestAirtableClient(unittest.TestCase):
         self.assertIsNotNone(
             target,
             msg="Test table should include a field of type 'str' for this test")
-        
-        print(f"\nTesting with field {target}")
 
         # Generate a random string
         test_string = ''.join(random.choices(
