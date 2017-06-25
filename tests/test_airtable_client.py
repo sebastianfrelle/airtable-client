@@ -1,22 +1,23 @@
-"""Unit testing
+"""Unit testing the Airtable client
 
-** You need ./constants.py with base_url, table_name and api_key
-pointing to the Airtable table you want to test against.**
+The test suite is independent of specific Airtable tables and bases, so you'll
+have to provide your own data. It is strongly recommended to create an Airtable 
+table to run the tests against. The table should have a few, filled-in records 
+and an assortment of field types to ensure that any tests that are set up 
+dynamically will run without errors.
 
-There is a limit to how precise the tests can be without access to
-a common, open Airtable instance-- obviously, I can't provide my
-personal Airtable API key. For better coverage, I suggest writing
-supplementary testing (sorry).
+There is a limit to how precise the tests can be without access to a common, 
+open Airtable instance-- obviously, I can't provide my personal Airtable API 
+key.
 """
 
 import logging
-import unittest
 import random
+import string
+import unittest
 
-random.randint()
-
+from .constants import API_KEY, BASE_ID, TABLE_NAME, TEST_RECORD
 from .context import airtable_client as client
-from .constants import BASE_ID, TABLE_NAME, API_KEY, TEST_RECORD
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -99,9 +100,31 @@ class TestAirtableClient(unittest.TestCase):
         # Get a random record to test with
         test_record = records[random.randrange(len(records))]
 
+        # Find a field in test_record that takes type 'str' to test against
+        str_fields = (k for k in test_record['fields'].keys()
+                      if isinstance(test_record['fields'][k], str))
+        target = next(str_fields, None)
+        self.assertIsNotNone(
+            target,
+            msg="Test table should include a field of type 'str' for this test")
         
-        for k, v in test_record.items():
-            if isinstance(v, str):
+        print(f"\nTesting with field {target}")
 
+        # Generate a random string
+        test_string = ''.join(random.choices(
+            string.ascii_uppercase + string.digits, k=20))
 
-        pass
+        # Update entry in fields
+        test_patch = {
+            'fields': {target: test_string},
+        }
+
+        # Perform update request
+        res = self.test_base.partial_update(
+            table_name=TABLE_NAME, record_id=test_record['id'], data=test_patch)
+
+        # Check to see if field was properly updated
+        self.assertIsNotNone(res)
+        self.assertIn(target, res['fields'])
+        self.assertEqual(test_record['id'], res['id'])
+        self.assertEqual(test_string, res['fields'][target])

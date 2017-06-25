@@ -71,20 +71,27 @@ class AirtableBase:
         except ValueError as ve:
             raise ConversionException()
 
-    def partial_update(self, table_name, data):
+    def partial_update(self, table_name, record_id, data):
         """Update a record in the Airtable table with name table_name
         """
 
         url = format_url(self.url, table_name, record_id)
 
-        res = requests.patch(url, headers=self.headers)
+        res = requests.patch(url, json=data, headers=self.headers)
         if res.status_code not in range(200, 300):
+            print(res.text)
             raise AirtableException({'status_code': res.status_code})
 
         try:
             return res.json()
         except ValueError as ve:
             raise ConversionException()
+
+    def update(self, table_name, data):
+        """Update an entire Airtable record
+        """
+
+        pass
 
     def delete(self, table_name, record_id):
         """Delete a record in the Airtable table with name table_name
