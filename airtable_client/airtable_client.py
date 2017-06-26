@@ -53,7 +53,7 @@ class AirtableBase:
 
         try:
             return res.json()
-        except ValueError as ve:
+        except ValueError:
             raise ConversionError()
 
     def create(self, table_name, data):
@@ -68,7 +68,7 @@ class AirtableBase:
 
         try:
             return res.json()
-        except ValueError as ve:
+        except ValueError:
             raise ConversionException()
 
     def partial_update(self, table_name, record_id, data):
@@ -83,14 +83,26 @@ class AirtableBase:
 
         try:
             return res.json()
-        except ValueError as ve:
+        except ValueError:
             raise ConversionException()
 
     def update(self, table_name, data):
         """Update an entire Airtable record
+
+        Calling this method empties any field that isn't included in the data 
+        being sent. Make sure to include any field that you want to keep.
         """
 
-        pass
+        url = format_url(self.url, table_name, record_id)
+
+        res = requests.put(url, json=data, headers=self.headers)
+        if res.status_code not in range(200, 300):
+            raise AirtableException({'status_code': res.status_code})
+
+        try:
+            return res.json()
+        except ValueError:
+            raise ConversionException()
 
     def delete(self, table_name, record_id):
         """Delete a record in the Airtable table with name table_name
@@ -108,5 +120,5 @@ class AirtableBase:
 
         try:
             return data
-        except ValueError as ve:
+        except ValueError:
             raise ConversionException()

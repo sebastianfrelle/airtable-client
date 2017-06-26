@@ -96,7 +96,7 @@ class TestAirtableClient(unittest.TestCase):
         created_id = res.get('id')
         self.assertIsNotNone(created_id)
 
-        # For cleaning up created tests in tearDown
+        # For cleaning up any newly created tests in tear-down
         self.created_test_records.append(created_id)
 
         # Assert equal values for keys that exist in both test data and created
@@ -140,3 +140,10 @@ class TestAirtableClient(unittest.TestCase):
         self.assertIn(target, res['fields'])
         self.assertEqual(test_record['id'], res['id'])
         self.assertEqual(test_string, res['fields'][target])
+
+    def test_update_a_record(self):
+        """Test partially update a record
+        """
+
+        res = self.test_base.update(table_name=TABLE)
+        
