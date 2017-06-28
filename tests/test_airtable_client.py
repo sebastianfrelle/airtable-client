@@ -22,6 +22,10 @@ from .context import airtable_client as client
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+ATTACHMENT_KEYS = sorted(['id', 'url',
+                          'filename', 'size',
+                          'type', 'thumbnails'])
+
 
 class TestAirtableClient(unittest.TestCase):
     """Test the Airtable client
@@ -142,8 +146,32 @@ class TestAirtableClient(unittest.TestCase):
         self.assertEqual(test_string, res['fields'][target])
 
     def test_update_a_record(self):
-        """Test partially update a record
+        """Test updating an entire record.
+
+        This should delete any fields not set in the body of the update request.
         """
 
-        res = self.test_base.update(table_name=TABLE)
+        # Retrieve a record for testing
+        res = self.test_base.retrieve(table_name=TABLE_NAME)
+        test_record = res['records'][random.randrange(len(records))]
+
+        # Get a field of type string to alter
+        gen_field_of_type_string = filter(
+            lambda k: isinstance(test_record['fields'][k], str),
+            test_record['fields'].keys(),
+        )
+        target_field = next(gen_field_of_type_string, None)
+        self.assertIsNotNone(
+            target_field,
+            msg="Test table should include a field of type 'str' for this test",
+        )
+
+        # Replace that testing field with a random string of length k=20
+        test_string = ''.join(random.choices(
+            string.ascii_uppercase + string.digits, k=20))
+
+        test_data = {
+            'fields': {target: test_string},
+        }
+
         
