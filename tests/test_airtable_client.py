@@ -65,7 +65,7 @@ class TestAirtableClient(unittest.TestCase):
         Also serves to verify connection.
         """
 
-        res = self.test_base.retrieve(table_name=TABLE_NAME, limit=1)
+        res = self.test_base.read(table_name=TABLE_NAME, limit=1)
 
         self.assertIsNotNone(res)
         self.assertIsInstance(res, dict)
@@ -79,7 +79,7 @@ class TestAirtableClient(unittest.TestCase):
         """Read all records in the table
         """
 
-        res = self.test_base.retrieve(table_name=TABLE_NAME)
+        res = self.test_base.read(table_name=TABLE_NAME)
 
         self.assertIsNotNone(res)
         self.assertIsInstance(res, dict)
@@ -112,7 +112,7 @@ class TestAirtableClient(unittest.TestCase):
         """Test partially update a record
         """
 
-        res = self.test_base.retrieve(table_name=TABLE_NAME)
+        res = self.test_base.read(table_name=TABLE_NAME)
         records = res['records']
 
         # Get a random record to test with
@@ -151,8 +151,8 @@ class TestAirtableClient(unittest.TestCase):
         This should delete any fields not set in the body of the update request.
         """
 
-        # Retrieve a record for testing
-        res = self.test_base.retrieve(table_name=TABLE_NAME)
+        # Read a record for testing
+        res = self.test_base.read(table_name=TABLE_NAME)
         test_record = res['records'][random.randrange(len(records))]
 
         # Get a field of type string to alter
@@ -173,5 +173,3 @@ class TestAirtableClient(unittest.TestCase):
         test_data = {
             'fields': {target: test_string},
         }
-
-        

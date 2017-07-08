@@ -29,7 +29,7 @@ class ConversionException(Exception):
 class AirtableBase:
     """Represents an Airtable base
 
-    This class represents an entire Airtable base. The name of the table
+    The name of the table to operate
     """
 
     def __init__(self, base_id, api_key):
@@ -41,20 +41,6 @@ class AirtableBase:
             'Authorization': f'Bearer {api_key}',
             'Content-type': 'application/json',
         }
-
-    def retrieve(self, table_name, record_id=None, **params):
-        """Retrieve records from the Airtable base
-        """
-        url = format_url(self.url, table_name, record_id)
-
-        res = requests.get(url, params, headers=self.headers)
-        if res.status_code not in range(200, 300):
-            raise AirtableException({'status_code': res.status_code})
-
-        try:
-            return res.json()
-        except ValueError:
-            raise ConversionError()
 
     def create(self, table_name, data):
         """Create a new record in the Airtable table with name table_name
@@ -71,20 +57,19 @@ class AirtableBase:
         except ValueError:
             raise ConversionException()
 
-    def partial_update(self, table_name, record_id, data):
-        """Update a record in the Airtable table with name table_name
+    def read(self, table_name, record_id=None, **params):
+        """Retrieve records from the Airtable base
         """
-
         url = format_url(self.url, table_name, record_id)
 
-        res = requests.patch(url, json=data, headers=self.headers)
+        res = requests.get(url, params, headers=self.headers)
         if res.status_code not in range(200, 300):
             raise AirtableException({'status_code': res.status_code})
 
         try:
             return res.json()
         except ValueError:
-            raise ConversionException()
+            raise ConversionError()
 
     def update(self, table_name, data):
         """Update an entire Airtable record
@@ -96,6 +81,21 @@ class AirtableBase:
         url = format_url(self.url, table_name, record_id)
 
         res = requests.put(url, json=data, headers=self.headers)
+        if res.status_code not in range(200, 300):
+            raise AirtableException({'status_code': res.status_code})
+
+        try:
+            return res.json()
+        except ValueError:
+            raise ConversionException()
+
+    def partial_update(self, table_name, record_id, data):
+        """Update a record in the Airtable table with name table_name
+        """
+
+        url = format_url(self.url, table_name, record_id)
+
+        res = requests.patch(url, json=data, headers=self.headers)
         if res.status_code not in range(200, 300):
             raise AirtableException({'status_code': res.status_code})
 
