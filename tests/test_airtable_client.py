@@ -41,7 +41,7 @@ class TestAirtableClient(unittest.TestCase):
         # Delete any records created by running this test case
         for record_id in cls.created_test_records:
             res = cls.test_base.delete(TABLE_NAME, record_id)
-            assert record_id == res['id']
+            self.assertEqual(record_id, res['id']);
 
     # Tests
     def test_init_table(self):
