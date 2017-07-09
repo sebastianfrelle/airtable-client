@@ -74,7 +74,7 @@ class AirtableBase:
             for record in response.pop('records'):
                 yield record
             if 'offset' in response:
-                offset=response['offset']
+                offset = response['offset']
             else:
                 break
 
@@ -84,18 +84,18 @@ class AirtableBase:
         Calling this method empties any field that isn't included in the data
         being sent. Make sure to include any field that you want to keep.
         """
-        url=format_url(self.url, table_name, record_id)
+        url = format_url(self.url, table_name, record_id)
         return self._request(url, 'PUT', json=data)
 
     def partial_update(self, table_name, record_id, data):
         """Update a record in the Airtable table with name table_name
         """
 
-        url=format_url(self.url, table_name, record_id)
+        url = format_url(self.url, table_name, record_id)
         return self._request(url, 'PATCH', json=data)
 
     def delete(self, table_name, record_id):
         """Delete a record in the Airtable table with name table_name
         """
-        url=format_url(self.url, table_name, record_id)
+        url = format_url(self.url, table_name, record_id)
         return self._request(url, 'DELETE')
