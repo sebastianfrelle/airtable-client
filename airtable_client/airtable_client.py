@@ -71,7 +71,7 @@ class AirtableBase:
         except ValueError:
             raise ConversionError()
 
-    def update(self, table_name, data):
+    def update(self, table_name, record_id, data):
         """Update an entire Airtable record
 
         Calling this method empties any field that isn't included in the data 

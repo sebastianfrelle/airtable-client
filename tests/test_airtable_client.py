@@ -153,7 +153,8 @@ class TestAirtableClient(unittest.TestCase):
 
         # Read a record for testing
         res = self.test_base.read(table_name=TABLE_NAME)
-        test_record = res['records'][random.randrange(len(records))]
+        records = res['records']
+        test_record = records[random.randrange(len(records))]
 
         # Get a field of type string to alter
         gen_field_of_type_string = filter(
@@ -171,5 +172,21 @@ class TestAirtableClient(unittest.TestCase):
             string.ascii_uppercase + string.digits, k=20))
 
         test_data = {
-            'fields': {target: test_string},
+            'fields': {target_field: test_string},
         }
+
+        # Perform update request
+        res = self.test_base.update(
+            table_name=TABLE_NAME, record_id=test_record['id'], data=test_data)
+
+        # Check to see if field was properly updated
+        self.assertIsNotNone(res)
+        self.assertIn(target_field, res['fields'])
+        self.assertEqual(test_record['id'], res['id'])
+        self.assertEqual(test_string, res['fields'][target_field])
+
+        for f, v in res['fields'].items():
+            if f == target_field:
+                continue
+            else:
+                self.assertEqual("", res['fields'][f])
