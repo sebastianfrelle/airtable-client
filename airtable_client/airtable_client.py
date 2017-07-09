@@ -2,85 +2,123 @@
 """
 import requests
 import json
+import re
+
+API_URL = 'https://api.airtable.com/v0/'
 
 
-def format_url_param_str(params):
-    url_params = [f"{k}={v}" for k, v in params.items()]
-    return '?' + '&'.join(url_params)
-
-
-class UnknownParamException(Exception):
-    """An unknown param was passed to a request.
-    """
-
-    pass
+def format_url(*resources):
+    return '/'.join([str(r) for r in resources if r])
 
 
 class AirtableException(Exception):
     """An exception occurred while polling the server
     """
 
-    def __init__(self, msg=None):
-        super().__init__()
-        self.msg = msg
+    def __init__(self, err=None):
+        super().__init__(err)
+        self.err = err
 
 
-class Airtable:
-    """Represents an Airtable table
+class ConversionException(Exception):
+    """Could not parse JSON response data to dict
+    """
+    pass
+
+
+class AirtableBase:
+    """Represents an Airtable base
+
+    The name of the table to operate
     """
 
-    def __init__(self, base_url, table_name, api_key):
-        self.base_url = base_url
-        self.table_name = table_name
+    def __init__(self, base_id, api_key):
+        self.base_id = base_id
         self.api_key = api_key
 
-        self.url = base_url + table_name
-        self.auth_header = {'Authorization': f'Bearer {api_key}'}
+        self.url = API_URL + base_id
+        self.headers = {
+            'Authorization': f'Bearer {api_key}',
+            'Content-type': 'application/json',
+        }
 
-    def _request(self, method, params=None, data=None):
-        url = self.url
-        if params:
-            url += format_url_param_str(params)
+    def create(self, table_name, data):
+        """Create a new record in the Airtable table with name table_name
+        """
 
-        headers = self.auth_header
-        if method in ['POST', 'PUT', 'UPDATE']:
-            headers['Content-type'] = 'application/json'
+        url = format_url(self.url, table_name)
 
-        res = requests.request(method, url, headers=headers, data=data)
-
-        parsed_res = res.json()
-
+        res = requests.post(url, json=data, headers=self.headers)
         if res.status_code not in range(200, 300):
-            msg = parsed_res.get('error')
-            raise AirtableException(msg)
+            raise AirtableException({'status_code': res.status_code})
 
-        return parsed_res
+        try:
+            return res.json()
+        except ValueError:
+            raise ConversionException()
 
-    # CRUD operations
-    def get(self, **params):
-        """Issue a GET request
+    def read(self, table_name, record_id=None, **params):
+        """Retrieve records from the Airtable base
+        """
+        url = format_url(self.url, table_name, record_id)
 
-        This fetches table records.
+        res = requests.get(url, params, headers=self.headers)
+        if res.status_code not in range(200, 300):
+            raise AirtableException({'status_code': res.status_code})
+
+        try:
+            return res.json()
+        except ValueError:
+            raise ConversionError()
+
+    def update(self, table_name, record_id, data):
+        """Update an entire Airtable record
+
+        Calling this method empties any field that isn't included in the data 
+        being sent. Make sure to include any field that you want to keep.
         """
 
-        res = self._request('GET', params)
-        records = res['records']
+        url = format_url(self.url, table_name, record_id)
 
-        return records
+        res = requests.put(url, json=data, headers=self.headers)
+        if res.status_code not in range(200, 300):
+            raise AirtableException({'status_code': res.status_code})
 
-    def post(self, data):
-        """Issue a POST request
+        try:
+            return res.json()
+        except ValueError:
+            raise ConversionException()
+
+    def partial_update(self, table_name, record_id, data):
+        """Update a record in the Airtable table with name table_name
         """
-        pass
 
-    def create(self):
-        pass
+        url = format_url(self.url, table_name, record_id)
 
-    def read(self, id=None):
-        pass
+        res = requests.patch(url, json=data, headers=self.headers)
+        if res.status_code not in range(200, 300):
+            raise AirtableException({'status_code': res.status_code})
 
-    def update(self):
-        pass
+        try:
+            return res.json()
+        except ValueError:
+            raise ConversionException()
 
-    def delete(self):
-        pass
+    def delete(self, table_name, record_id):
+        """Delete a record in the Airtable table with name table_name
+        """
+
+        url = format_url(self.url, table_name, record_id)
+
+        res = requests.delete(url, headers=self.headers)
+        if res.status_code not in range(200, 300):
+            raise AirtableException({'status_code': res.status_code})
+
+        data = res.json()
+        if not data['deleted']:
+            raise AirtableException(data)
+
+        try:
+            return data
+        except ValueError:
+            raise ConversionException()
